@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#11152f" />
+  <title>Le Grand Quiz des Potes</title>
+  <style>
+    :root { color-scheme: dark; --bg: #0d1025; --panel: #171b38; --line: rgba(255,255,255,.13); --text: #f7f8ff; --muted:#b5b9d5; --purple:#ab8dff; --mint:#58e2ae; --red:#ff798e; --yellow:#ffcb71; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { min-height: 100dvh; display: grid; place-items: center; padding: 25px 16px; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: radial-gradient(ellipse at 18% 16%, #342263 0, transparent 38%), radial-gradient(ellipse at 85% 86%, #164e60 0, transparent 39%), var(--bg); }
+    button { font: inherit; }
+    .app { width: min(100%, 720px); }
+    .logo { display:flex; align-items:center; justify-content:center; gap:10px; color:#d5c9ff; font-weight: 800; letter-spacing:.18em; font-size:.77rem; text-transform:uppercase; margin-bottom:19px; }
+    .star { font-size: 1.6rem; }
+    .card { position:relative; overflow:hidden; background:linear-gradient(165deg, rgba(31,35,72,.97), rgba(19,23,48,.99)); border: 1px solid rgba(255,255,255,.16); border-radius: 28px; padding: clamp(24px, 5vw, 44px); box-shadow: 0 24px 80px rgba(0,0,0,.34); }
+    .card:before { content:""; position:absolute; inset:0 0 auto; height:4px; background: linear-gradient(90deg,#a178ff,#6bddf2,#58e2ae); }
+    .center { text-align:center; }
+    .eyebrow { color:var(--purple); font-weight:850; text-transform:uppercase; letter-spacing:.14em; font-size:.79rem; }
+    h1 { font-weight:900; font-size:clamp(2.2rem, 7vw, 4.2rem); letter-spacing:-.045em; line-height:1.05; margin:15px 0 18px; }
+    h2 { font-size:clamp(1.45rem, 4.5vw, 2.16rem); letter-spacing:-.035em; line-height:1.22; margin:26px 0 26px; }
+    p { color:var(--muted); line-height:1.6; }
+    .hero-emoji { display:block; font-size: 4.7rem; margin:17px 0 23px; filter:drop-shadow(0 14px 25px rgba(171,141,255,.2)); }
+    .highlight { color:#d5c5ff; font-weight:800; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; gap:9px; background:linear-gradient(110deg,#b391ff,#8f78ff); color:#11152b; padding:16px 28px; min-height:55px; border:0; border-radius:15px; cursor:pointer; font-weight:900; transition:transform .15s,filter .15s; box-shadow:0 10px 28px rgba(143,120,255,.25); }
+    .cta:hover { transform:translateY(-2px); filter:brightness(1.08); }
+    .cta:focus-visible, .choice:focus-visible { outline:3px solid var(--yellow); outline-offset:4px; }
+    .cta:active { transform:scale(.98); }
+    .meta { display:flex; justify-content:center; flex-wrap:wrap; gap:9px; margin:28px 0 30px; }
+    .pill { border:1px solid var(--line); border-radius:100px; padding:8px 12px; font-size:.81rem; color:#d8d9ea; background:rgba(255,255,255,.04); }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:.9rem; font-weight:750; margin-bottom:15px; }
+    .dim { color:var(--muted); }
+    .score { color:var(--yellow); }
+    .progress { height:8px; background:rgba(255,255,255,.11); border-radius:100px; overflow:hidden; }
+    .progress-inner { height:100%; width:0; background:linear-gradient(90deg,#8f78ff,#58e2ae); border-radius:inherit; transition:width .35s ease; }
+    .question-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:25px; }
+    .timer { width:75px; height:75px; display:grid; place-items:center; flex:none; border-radius:50%; background:conic-gradient(var(--mint) var(--angle, 360deg),rgba(255,255,255,.13) 0); transition:background .12s; }
+    .timer-inner { width:64px; height:64px; border-radius:50%; background:#202546; display:grid; place-items:center; font-weight:900; font-size:1.65rem; font-variant-numeric:tabular-nums; }
+    .timer.urgent { background:conic-gradient(var(--red) var(--angle, 360deg),rgba(255,255,255,.13) 0); }
+    .timer.urgent .timer-inner { color:var(--red); }
+    .choices { display:grid; gap:12px; }
+    .choice { width:100%; min-height:68px; display:flex; align-items:center; text-align:left; gap:14px; padding:12px 18px; border:1px solid rgba(255,255,255,.17); background:rgba(255,255,255,.04); border-radius:15px; color:var(--text); font-size:1.06rem; font-weight:650; cursor:pointer; transition:background .15s, border-color .15s,transform .15s; }
+    .choice:hover:not(:disabled) { background:rgba(169,139,255,.15); border-color:var(--purple); transform:translateX(3px); }
+    .choice:disabled { cursor:default; }
+    .letter { display:grid; place-items:center; width:35px; height:35px; flex:none; border-radius:10px; background:rgba(255,255,255,.09); color:#d8d6ee; font-weight:850; font-size:.89rem; }
+    .choice.correct { background:rgba(88,226,174,.14); border-color:var(--mint); }
+    .choice.correct .letter { color:#0b281e; background:var(--mint); }
+    .choice.wrong { background:rgba(255,121,142,.14); border-color:var(--red); }
+    .choice.wrong .letter { color:#3b0610; background:var(--red); }
+    .feedback { min-height:50px; margin:17px 0 0; font-weight:800; font-size:.97rem; color:var(--mint); }
+    .feedback.error { color:var(--red); }
+    .feedback.neutral { color:var(--yellow); }
+    .tiny { color:var(--muted); font-size:.82rem; text-align:center; margin:18px 0 0; }
+    .result-score { font-size:clamp(4.3rem,12vw,6rem); font-weight:950; letter-spacing:-.07em; line-height:1; margin:20px 0 4px; background:linear-gradient(95deg,#bd9cff,#6ce1f1); background-clip:text; -webkit-background-clip:text; color:transparent; }
+    .result-score small { font-size:.45em; color:#d5d8ee; -webkit-text-fill-color:#d5d8ee; }
+    .result-message { font-size:1.35rem; color:#fff; font-weight:850; margin:12px 0 7px; }
+    .review { margin-top:22px; text-align:left; border-top:1px solid var(--line); padding-top:20px; }
+    .review summary { cursor:pointer; font-weight:800; color:#d5c5ff; padding:6px 0; }
+    .review ol { padding-left:23px; color:var(--muted); line-height:1.5; }
+    .review li { padding:5px 0; }
+    .review strong { color:#fff; }
+    .hidden { display:none !important; }
+    @media(max-width:520px) { .card {border-radius:22px;} .question-head { align-items:flex-start; } .timer {width:65px;height:65px;} .timer-inner {width:55px;height:55px;font-size:1.4rem;} .choice {min-height:62px; font-size:1rem;} }
+    @media(prefers-reduced-motion:reduce) { *,*:before,*:after {transition:none !important;animation:none !important;} }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="logo"><span class="star" aria-hidden="true">✦</span> LE GRAND QUIZ DES POTES <span class="star" aria-hidden="true">✦</span></div>
+    <section class="card center" id="start-screen">
+      <span class="eyebrow">Qui connaît le mieux la bande ?</span>
+      <span class="hero-emoji" aria-hidden="true">🧠🏆</span>
+      <h1>Tu connais vraiment tes potes ?</h1>
+      <p>De William à HJ, il est temps de prouver que tu connais toutes les anecdotes de la bande !</p>
+      <div class="meta"><span class="pill">🎯 11 questions</span><span class="pill">⏱️ 10 secondes / question</span><span class="pill">🏆 1 point / bonne réponse</span></div>
+      <button class="cta" id="start-btn">C'est parti ! <span aria-hidden="true">→</span></button>
+    </section>
+    <section class="card hidden" id="quiz-screen" aria-label="Quiz" aria-live="off">
+      <div class="top"><span class="dim" id="counter">Question 1 / 11</span><span class="score" id="score-live">⭐ 0 point</span></div>
+      <div class="progress" role="progressbar" id="progress" aria-label="Progression des questions" aria-valuemin="0" aria-valuemax="11" aria-valuenow="0"><div class="progress-inner" id="progress-inner"></div></div>
+      <div class="question-head"><div class="eyebrow">À toi de jouer !</div><div class="timer" id="timer" role="timer" aria-label="Temps restant : 10 secondes" style="--angle:360deg"><div class="timer-inner" id="seconds">10</div></div></div>
+      <h2 id="question-text"></h2>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+      <p class="tiny">Choisis vite : une seule réponse possible !</p>
+    </section>
+    <section class="card center hidden" id="result-screen">
+      <div class="eyebrow">Quiz terminé</div>
+      <span class="hero-emoji" id="result-emoji" aria-hidden="true">🏆</span>
+      <h1>Résultat final</h1>
+      <div class="result-score" id="final-score">0 <small>/ 11</small></div>
+      <div class="result-message" id="result-message"></div>
+      <p id="result-description"></p>
+      <button class="cta" id="restart-btn">↻ Rejouer le quiz</button>
+    </section>
+  </main>
+  <script>
+    'use strict';
+    const questions = [
+      { q: "Quel est le film préféré de William ?", a: ["Gladiator", "Django", "War Dogs"], correct: 0 },
+      { q: "Quel iPhone possède Antoine ?", a: ["iPhone 14", "iPhone 15", "iPhone 16"], correct: 1 },
+      { q: "Quelle est l'adresse du nouvel appart de JB ?", a: ["86 boulevard de Clichy", "86 avenue de Clichy", "86 rue de Clichy"], correct: 1 },
+      { q: "Quel est le client de Thomas au travail ?", a: ["Samsung", "Lenovo", "HP"], correct: 0 },
+      { q: "Quelle est la marque du vélo de Capu ?", a: ["Van Rysel", "Liv", "Look"], correct: 1 },
+      { q: "Qui est la plus grande entre Victoria et Alice ?", a: ["Victoria", "Alice"], correct: 1 },
+      { q: "Où jouait Guiz au rugby quand il était jeune ?", a: ["MLSGP", "RCMC", "RCP XV"], correct: 1 },
+      { q: "Quel est le temps de Paul au marathon ?", a: ["3h23", "3h25", "3h28"], correct: 1 },
+      { q: "Où est parti récemment Tico ?", a: ["Chicago", "Los Angeles", "New York"], correct: 2 },
+      { q: "Quelle est la race du nouveau chien de Loli ?", a: ["Goldendoodle", "Golden Retriever", "Labrador"], correct: 0 },
+      { q: "Dans quelle ville HJ est-il parti en échange Erasmus ?", a: ["Québec", "Montréal", "Kingston"], correct: 2 }
+    ];
+    const DURATION = 10;
+    const REVEAL_MS = 1600;
+    const $ = id => document.getElementById(id);
+    let index = 0, score = 0, answered = false, timerId = null, nextId = null, deadline = 0;
+    const views = ['start-screen', 'quiz-screen', 'result-screen'];
+
+    function showView(id) { views.forEach(v => $(v).classList.toggle('hidden', v !== id)); }
+    function start() { clearInterval(timerId); clearTimeout(nextId); index = 0; score = 0; showView('quiz-screen'); renderQuestion(); }
+    function renderQuestion() {
+      answered = false;
+      const item = questions[index];
+      $('counter').textContent = `Question ${index + 1} / ${questions.length}`;
+      $('score-live').textContent = `⭐ ${score} point${score > 1 ? 's' : ''}`;
+      $('progress-inner').style.width = `${(index / questions.length) * 100}%`;
+      $('progress').setAttribute('aria-valuenow', index);
+      $('question-text').textContent = item.q;
+      $('feedback').textContent = '';
+      $('feedback').className = 'feedback';
+      $('choices').replaceChildren();
+      item.a.forEach((answer, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.type = 'button';
+        const letter = document.createElement('span');
+        letter.className = 'letter';
+        letter.textContent = String.fromCharCode(65 + i);
+        const content = document.createElement('span');
+        content.textContent = answer;
+        btn.append(letter, content);
+        btn.addEventListener('click', () => selectAnswer(i));
+        $('choices').appendChild(btn);
+      });
+      deadline = performance.now() + DURATION * 1000;
+      updateTimer();
+      clearInterval(timerId);
+      timerId = setInterval(updateTimer, 100);
+    }
+    function updateTimer() {
+      if (answered) return;
+      const ms = Math.max(0, deadline - performance.now());
+      const left = Math.ceil(ms / 1000);
+      $('seconds').textContent = left;
+      $('timer').style.setProperty('--angle', `${(ms / (DURATION * 1000)) * 360}deg`);
+      $('timer').classList.toggle('urgent', left <= 3);
+      $('timer').setAttribute('aria-label', `Temps restant : ${left} seconde${left > 1 ? 's' : ''}`);
+      if (ms <= 0) selectAnswer(null);
+    }
+    function selectAnswer(choice) {
+      if (answered) return;
+      answered = true;
+      clearInterval(timerId);
+      const item = questions[index];
+      const isCorrect = choice === item.correct;
+      if (isCorrect) score++;
+      Array.from($('choices').children).forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === choice && !isCorrect) btn.classList.add('wrong');
+      });
+      const feedback = $('feedback');
+      if (isCorrect) { feedback.textContent = '✅ Bonne réponse ! +1 point'; feedback.className = 'feedback'; }
+      else if (choice === null) { feedback.textContent = `⏰ Temps écoulé !`; feedback.className = 'feedback neutral'; }
+      else { feedback.textContent = `❌ Raté !`; feedback.className = 'feedback error'; }
+      $('score-live').textContent = `⭐ ${score} point${score > 1 ? 's' : ''}`;
+      nextId = setTimeout(() => { index++; if (index < questions.length) renderQuestion(); else showResult(); }, REVEAL_MS);
+    }
+    function showResult() {
+      clearInterval(timerId); clearTimeout(nextId);
+      showView('result-screen');
+      $('final-score').innerHTML = `${score} <small>/ ${questions.length}</small>`;
+      if (score === questions.length) { $('result-emoji').textContent = '👑'; $('result-message').textContent = 'LE GOAT DE LA BANDE !'; $('result-description').textContent = 'Un sans-faute ! Tu connais tes potes mieux que personne.'; }
+      else if (score >= 8) { $('result-emoji').textContent = '🏆'; $('result-message').textContent = 'Très solide !'; $('result-description').textContent = 'Tu connais presque tous les dossiers de la bande.'; }
+      else if (score >= 5) { $('result-emoji').textContent = '😎'; $('result-message').textContent = 'Pas mal du tout !'; $('result-description').textContent = 'Quelques trous de mémoire, mais tu fais partie de l’équipe.'; }
+      else { $('result-emoji').textContent = '🙈'; $('result-message').textContent = 'On se connaît vraiment ?'; $('result-description').textContent = 'Va falloir refaire quelques soirées avec la bande !'; }
+
+    }
+    $('start-btn').addEventListener('click', start);
+    $('restart-btn').addEventListener('click', start);
+    document.addEventListener('keydown', event => {
+      if ($('quiz-screen').classList.contains('hidden') || answered || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
+      const number = Number(event.key);
+      if (number >= 1 && number <= questions[index].a.length) selectAnswer(number - 1);
+    });
+  </script>
+</body>
+</html>
